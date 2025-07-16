@@ -576,7 +576,7 @@
 		transition: all 0.2s ease;
 		min-height: 40px;
 		background: var(--md-sys-color-surface-variant);
-		color: var(--md-sys-color-on-surface-variant);
+		color: var(--md-sys-color-on-surface);
 		border: 2px solid transparent;
 	}
 	.user-chip:hover {
@@ -652,6 +652,7 @@
 		transition: all 0.2s ease;
 		background: var(--md-sys-color-surface);
 		border: 2px solid transparent;
+		color: var(--md-sys-color-on-surface);
 	}
 	.task-user-option:hover {
 		background: var(--md-sys-color-surface-variant);
@@ -724,6 +725,46 @@
 		display: flex;
 		gap: 1rem;
 		justify-content: flex-end;
+	}
+	
+	/* Dark mode specific overrides for better visibility */
+	:global(.dark) .user-chip {
+		background: var(--md-sys-color-surface-variant);
+		color: var(--md-sys-color-on-surface);
+		border: 1px solid var(--md-sys-color-outline);
+	}
+	
+	:global(.dark) .user-chip:hover {
+		background: var(--md-sys-color-primary-container);
+		color: var(--md-sys-color-on-primary-container);
+		border-color: var(--md-sys-color-primary);
+	}
+	
+	:global(.dark) .task-user-option {
+		color: var(--md-sys-color-on-surface);
+		border: 1px solid var(--md-sys-color-outline);
+	}
+	
+	:global(.dark) .task-user-option:hover {
+		background: var(--md-sys-color-surface-variant);
+		color: var(--md-sys-color-on-surface);
+		border-color: var(--md-sys-color-primary);
+	}
+	
+	:global(.dark) .task-user-option.selected {
+		background: var(--md-sys-color-primary-container);
+		color: var(--md-sys-color-on-primary-container);
+		border-color: var(--md-sys-color-primary);
+	}
+	
+	/* Ensure dropdown text is visible in dark mode */
+	:global(.dark) md-select-option {
+		color: var(--md-sys-color-on-surface) !important;
+	}
+	
+	:global(.dark) md-select-option:hover {
+		background: var(--md-sys-color-surface-variant) !important;
+		color: var(--md-sys-color-on-surface) !important;
 	}
 </style>
 

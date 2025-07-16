@@ -18,7 +18,19 @@
 		const unsubscribe = onAuthStateChanged(auth, (firebaseUser: any) => {
 			user.set(firebaseUser);
 		});
-		// Don't auto-switch dark mode - let user control it manually
+		
+		// Check for saved dark mode preference
+		const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+		const isDarkModeActive = document.documentElement.classList.contains('dark');
+		
+		// Set the toggle state based on current dark mode
+		darkMode.set(isDarkModeActive || savedDarkMode);
+		
+		// Apply dark mode if needed
+		if (isDarkModeActive || savedDarkMode) {
+			document.documentElement.classList.add('dark');
+		}
+		
 		fetchProjectsAndUsers();
 		return unsubscribe;
 	});
@@ -42,26 +54,21 @@
 		await fetchProjectsAndUsers();
 	}
 
-	async function assignUser(projectId: string, userId: string, assigned: boolean) {
-		const ref = doc(db, 'projects', projectId);
-		await updateDoc(ref, {
-			assignedUsers: assigned ? arrayRemove(userId) : arrayUnion(userId)
-		});
-		await fetchProjectsAndUsers();
-	}
-
 	function isOwner(project: any, uid: string) {
 		return project.owner === uid;
 	}
 
 	function toggleDarkMode() {
 		darkMode.update((v: boolean) => {
-			if (!v) {
+			const newValue = !v;
+			if (newValue) {
 				document.documentElement.classList.add('dark');
+				localStorage.setItem('darkMode', 'true');
 			} else {
 				document.documentElement.classList.remove('dark');
+				localStorage.setItem('darkMode', 'false');
 			}
-			return !v;
+			return newValue;
 		});
 	}
 
@@ -123,36 +130,7 @@
 							<md-filled-button on:click={() => selfAssign(project.id, false)} style="margin-right: 1rem;">Join Project</md-filled-button>
 						{/if}
 					{/if}
-					<!-- Owner can assign/unassign others -->
-					{#if $user && isOwner(project, $user.uid)}
-						<div class="user-assignment-section">
-							<strong>Assign users:</strong>
-							<div class="user-selection-grid">
-								{#each allUsers as u}
-									{#if u.id !== project.owner}
-										<div class="user-selection-item">
-											<md-filled-button
-												class="user-chip {project.assignedUsers && project.assignedUsers.includes(u.id) ? 'selected' : ''}"
-												on:click={() => assignUser(project.id, u.id, project.assignedUsers && project.assignedUsers.includes(u.id))}
-											>
-												<span class="user-avatar">
-													{#if u.photoURL}
-														<img src={u.photoURL} alt="" />
-													{:else}
-														<span class="material-symbols-outlined">person</span>
-													{/if}
-												</span>
-												<span class="user-name">{u.displayName || u.email}</span>
-												{#if project.assignedUsers && project.assignedUsers.includes(u.id)}
-													<span class="material-symbols-outlined check-icon">check</span>
-												{/if}
-											</md-filled-button>
-										</div>
-									{/if}
-								{/each}
-							</div>
-						</div>
-					{/if}
+
 				</div>
 			{/each}
 		{/if}
@@ -241,80 +219,8 @@
 		font-weight: 600;
 		color: var(--md-sys-color-on-surface);
 	}
-	.user-assignment-section {
-		margin-top: 1rem;
-		width: 100%;
-	}
-	.user-assignment-section strong {
-		display: block;
-		margin-bottom: 0.75rem;
-		font-size: 1rem;
-		color: var(--md-sys-color-on-surface);
-	}
-	.user-selection-grid {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem;
-	}
-	.user-selection-item {
-		flex: 0 0 auto;
-	}
-	.user-chip {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		padding: 0.5rem 0.75rem;
-		border-radius: var(--md-sys-shape-corner-large);
-		font-size: 0.9rem;
-		font-weight: 500;
-		transition: all 0.2s ease;
-		min-height: 40px;
-		background: var(--md-sys-color-surface-variant);
-		color: var(--md-sys-color-on-surface-variant);
-		border: 2px solid transparent;
-	}
-	.user-chip:hover {
-		background: var(--md-sys-color-primary-container);
-		color: var(--md-sys-color-on-primary-container);
-		transform: translateY(-1px);
-		box-shadow: 0 4px 12px rgba(103, 80, 164, 0.15);
-	}
-	.user-chip.selected {
-		background: var(--md-sys-color-primary);
-		color: var(--md-sys-color-on-primary);
-		border-color: var(--md-sys-color-primary);
-		box-shadow: 0 2px 8px rgba(103, 80, 164, 0.2);
-	}
-	.user-avatar {
-		width: 24px;
-		height: 24px;
-		border-radius: 50%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: var(--md-sys-color-surface);
-		overflow: hidden;
-	}
-	.user-avatar img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-	}
-	.user-avatar .material-symbols-outlined {
-		font-size: 16px;
-		color: var(--md-sys-color-on-surface-variant);
-	}
-	.user-chip.selected .user-avatar .material-symbols-outlined {
-		color: var(--md-sys-color-primary);
-	}
-	.user-name {
-		font-weight: 500;
-		white-space: nowrap;
-	}
-	.check-icon {
-		font-size: 18px;
-		margin-left: 0.25rem;
-	}
+
+
 	md-filled-button {
 		margin-top: 2rem;
 		min-width: 180px;
@@ -335,4 +241,6 @@
 		--md-sys-color-on-secondary-container: #e8def8;
 		--md-sys-color-outline: #938f99;
 	}
+	
+
 </style>
