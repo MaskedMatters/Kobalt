@@ -36,12 +36,12 @@
 		loadingProjects = false;
 	}
 
-	async function selfAssign(projectId: string, assigned: boolean) {
+	async function selfAssign(projectId: string, leaving: boolean) {
 		const u = get(user);
 		if (!u) return;
 		const ref = doc(db, 'projects', projectId);
 		await updateDoc(ref, {
-			assignedUsers: assigned ? arrayRemove(u.uid) : arrayUnion(u.uid)
+			assignedUsers: leaving ? arrayRemove(u.uid) : arrayUnion(u.uid)
 		});
 		await fetchProjectsAndUsers();
 	}

@@ -282,12 +282,23 @@
 				<div class="project-actions">
 					<md-filled-button on:click={saveProjectInline} style="margin-right: 1rem;">Save Changes</md-filled-button>
 					<md-filled-button style="background: #b3261e; color: #fff;" on:click={() => showDeleteConfirm = true}>Delete Project</md-filled-button>
-					{#if showDeleteConfirm}
-						<span style="margin-left: 1rem; color: #b3261e;">Are you sure? This cannot be undone.</span>
-						<md-filled-button style="margin-left: 1rem; background: #b3261e; color: #fff;" on:click={deleteProject}>Yes, Delete</md-filled-button>
-						<md-filled-button style="margin-left: 1rem;" on:click={() => showDeleteConfirm = false}>Cancel</md-filled-button>
-					{/if}
 				</div>
+				
+				{#if showDeleteConfirm}
+					<div class="delete-confirmation">
+						<div class="delete-warning">
+							<span class="material-symbols-outlined warning-icon">warning</span>
+							<div class="delete-text">
+								<h3>Delete Project</h3>
+								<p>Are you sure you want to delete "{$project?.title}"? This action cannot be undone and will permanently remove the project and all its tasks.</p>
+							</div>
+						</div>
+						<div class="delete-actions">
+							<md-filled-button on:click={() => showDeleteConfirm = false}>Cancel</md-filled-button>
+							<md-filled-button style="background: #b3261e; color: #fff;" on:click={deleteProject}>Yes, Delete Project</md-filled-button>
+						</div>
+					</div>
+				{/if}
 
 			</div>
 		</md-outlined-card>
@@ -534,6 +545,42 @@
 		font-weight: 700;
 		color: var(--md-sys-color-primary);
 		margin-bottom: 1rem;
+	}
+	.delete-confirmation {
+		margin-top: 1.5rem;
+		padding: 1.5rem;
+		border: 2px solid #b3261e;
+		border-radius: var(--md-sys-shape-corner-large);
+		background: rgba(179, 38, 30, 0.05);
+	}
+	.delete-warning {
+		display: flex;
+		align-items: flex-start;
+		gap: 1rem;
+		margin-bottom: 1.5rem;
+	}
+	.warning-icon {
+		font-size: 2rem;
+		color: #b3261e;
+		flex-shrink: 0;
+		margin-top: 0.25rem;
+	}
+	.delete-text h3 {
+		font-size: 1.2rem;
+		font-weight: 600;
+		color: #b3261e;
+		margin: 0 0 0.5rem 0;
+	}
+	.delete-text p {
+		font-size: 1rem;
+		color: var(--md-sys-color-on-surface);
+		margin: 0;
+		line-height: 1.5;
+	}
+	.delete-actions {
+		display: flex;
+		gap: 1rem;
+		justify-content: flex-end;
 	}
 </style>
 
