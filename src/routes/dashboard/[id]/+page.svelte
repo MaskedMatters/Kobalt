@@ -267,14 +267,30 @@
 						<md-select-option value={u.id}>{u.displayName || u.email}</md-select-option>
 					{/each}
 				</md-outlined-select>
-				<div class="assigned-users-list">
+				<div class="assigned-users-section">
 					<strong>Assigned Users:</strong>
-					{#each users as u}
-						<label class="assigned-user-label">
-							<input type="checkbox" checked={assignedUsers.includes(u.id)} on:change={() => toggleUserAssignment(u.id)} />
-							{u.displayName || u.email}
-						</label>
-					{/each}
+					<div class="user-selection-grid">
+						{#each users as u}
+							<div class="user-selection-item">
+								<md-filled-button
+									class="user-chip {assignedUsers.includes(u.id) ? 'selected' : ''}"
+									on:click={() => toggleUserAssignment(u.id)}
+								>
+									<span class="user-avatar">
+										{#if u.photoURL}
+											<img src={u.photoURL} alt="" />
+										{:else}
+											<span class="material-symbols-outlined">person</span>
+										{/if}
+									</span>
+									<span class="user-name">{u.displayName || u.email}</span>
+									{#if assignedUsers.includes(u.id)}
+										<span class="material-symbols-outlined check-icon">check</span>
+									{/if}
+								</md-filled-button>
+							</div>
+						{/each}
+					</div>
 				</div>
 				{#if projectError}
 					<div class="error">{projectError}</div>
@@ -376,17 +392,35 @@
 				on:input={(e) => (dueDate = e.target.value)}
 				style="width: 100%;"
 			></md-outlined-text-field>
-			<md-outlined-select
-				label="Assigned User"
-				value={assignedUser}
-				on:input={(e) => (assignedUser = e.target.value)}
-				style="width: 100%;"
-			>
-				<md-select-option value="">Unassigned</md-select-option>
-				{#each users as u}
-					<md-select-option value={u.id}>{u.displayName || u.email}</md-select-option>
-				{/each}
-			</md-outlined-select>
+			<div class="task-user-assignment">
+				<label class="task-user-label">Assigned User</label>
+				<div class="task-user-selection">
+					<div class="task-user-option {assignedUser === '' ? 'selected' : ''}" on:click={() => assignedUser = ''}>
+						<span class="user-avatar">
+							<span class="material-symbols-outlined">person_off</span>
+						</span>
+						<span class="user-name">Unassigned</span>
+						{#if assignedUser === ''}
+							<span class="material-symbols-outlined check-icon">check</span>
+						{/if}
+					</div>
+					{#each users as u}
+						<div class="task-user-option {assignedUser === u.id ? 'selected' : ''}" on:click={() => assignedUser = u.id}>
+							<span class="user-avatar">
+								{#if u.photoURL}
+									<img src={u.photoURL} alt="" />
+								{:else}
+									<span class="material-symbols-outlined">person</span>
+								{/if}
+							</span>
+							<span class="user-name">{u.displayName || u.email}</span>
+							{#if assignedUser === u.id}
+								<span class="material-symbols-outlined check-icon">check</span>
+							{/if}
+						</div>
+					{/each}
+				</div>
+			</div>
 			{#if error}
 				<div class="error">{error}</div>
 			{/if}
@@ -513,19 +547,128 @@
 		flex-direction: column;
 		gap: 1rem;
 	}
-	.assigned-users-list {
+	.assigned-users-section {
 		margin: 1rem 0;
+		width: 100%;
+	}
+	.assigned-users-section strong {
+		display: block;
+		margin-bottom: 0.75rem;
+		font-size: 1rem;
+		color: var(--md-sys-color-on-surface);
+	}
+	.user-selection-grid {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.5rem 1.5rem;
+		gap: 0.5rem;
 	}
-	.assigned-user-label {
-		font-size: 1rem;
-		font-weight: 500;
-		color: var(--md-sys-color-on-surface-variant);
+	.user-selection-item {
+		flex: 0 0 auto;
+	}
+	.user-chip {
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
+		padding: 0.5rem 0.75rem;
+		border-radius: var(--md-sys-shape-corner-large);
+		font-size: 0.9rem;
+		font-weight: 500;
+		transition: all 0.2s ease;
+		min-height: 40px;
+		background: var(--md-sys-color-surface-variant);
+		color: var(--md-sys-color-on-surface-variant);
+		border: 2px solid transparent;
+	}
+	.user-chip:hover {
+		background: var(--md-sys-color-primary-container);
+		color: var(--md-sys-color-on-primary-container);
+		transform: translateY(-1px);
+		box-shadow: 0 4px 12px rgba(103, 80, 164, 0.15);
+	}
+	.user-chip.selected {
+		background: var(--md-sys-color-primary);
+		color: var(--md-sys-color-on-primary);
+		border-color: var(--md-sys-color-primary);
+		box-shadow: 0 2px 8px rgba(103, 80, 164, 0.2);
+	}
+	.user-avatar {
+		width: 24px;
+		height: 24px;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: var(--md-sys-color-surface);
+		overflow: hidden;
+	}
+	.user-avatar img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	.user-avatar .material-symbols-outlined {
+		font-size: 16px;
+		color: var(--md-sys-color-on-surface-variant);
+	}
+	.user-chip.selected .user-avatar .material-symbols-outlined {
+		color: var(--md-sys-color-primary);
+	}
+	.user-name {
+		font-weight: 500;
+		white-space: nowrap;
+	}
+	.check-icon {
+		font-size: 18px;
+		margin-left: 0.25rem;
+	}
+	.task-user-assignment {
+		width: 100%;
+	}
+	.task-user-label {
+		display: block;
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: var(--md-sys-color-on-surface-variant);
+		margin-bottom: 0.5rem;
+	}
+	.task-user-selection {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		max-height: 200px;
+		overflow-y: auto;
+		border: 1px solid var(--md-sys-color-outline);
+		border-radius: var(--md-sys-shape-corner-medium);
+		padding: 0.5rem;
+		background: var(--md-sys-color-surface);
+	}
+	.task-user-option {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.75rem;
+		border-radius: var(--md-sys-shape-corner-medium);
+		cursor: pointer;
+		transition: all 0.2s ease;
+		background: var(--md-sys-color-surface);
+		border: 2px solid transparent;
+	}
+	.task-user-option:hover {
+		background: var(--md-sys-color-surface-variant);
+		transform: translateX(2px);
+	}
+	.task-user-option.selected {
+		background: var(--md-sys-color-primary-container);
+		color: var(--md-sys-color-on-primary-container);
+		border-color: var(--md-sys-color-primary);
+	}
+	.task-user-option .user-avatar {
+		width: 32px;
+		height: 32px;
+	}
+	.task-user-option .user-name {
+		flex: 1;
+		font-weight: 500;
 	}
 	.project-actions {
 		display: flex;

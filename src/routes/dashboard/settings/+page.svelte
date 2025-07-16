@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { auth } from '$lib/firebase';
 	import { signOut, onAuthStateChanged } from 'firebase/auth';
-	import { writable } from 'svelte/store';
+	import { writable, get } from 'svelte/store';
 	import '@material/web/button/filled-button.js';
 	import '@material/web/labs/card/outlined-card.js';
 	import { db } from '$lib/firebase';
@@ -14,16 +14,12 @@
 	let allUsers: any[] = [];
 	let loadingProjects = true;
 
-	onMount(async () => {
+	onMount(() => {
 		const unsubscribe = onAuthStateChanged(auth, (firebaseUser: any) => {
 			user.set(firebaseUser);
 		});
-		// Check for dark mode preference
-		if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-			darkMode.set(true);
-			document.documentElement.classList.add('dark');
-		}
-		await fetchProjectsAndUsers();
+		// Don't auto-switch dark mode - let user control it manually
+		fetchProjectsAndUsers();
 		return unsubscribe;
 	});
 
@@ -129,16 +125,32 @@
 					{/if}
 					<!-- Owner can assign/unassign others -->
 					{#if $user && isOwner(project, $user.uid)}
-						<div style="margin-top: 0.5rem;">
+						<div class="user-assignment-section">
 							<strong>Assign users:</strong>
-							{#each allUsers as u}
-								{#if u.id !== project.owner}
-									<label style="margin-right: 1rem; font-size: 0.98rem;">
-										<input type="checkbox" checked={project.assignedUsers && project.assignedUsers.includes(u.id)} on:change={() => assignUser(project.id, u.id, project.assignedUsers && project.assignedUsers.includes(u.id))} />
-										{u.displayName || u.email}
-									</label>
-								{/if}
-							{/each}
+							<div class="user-selection-grid">
+								{#each allUsers as u}
+									{#if u.id !== project.owner}
+										<div class="user-selection-item">
+											<md-filled-button
+												class="user-chip {project.assignedUsers && project.assignedUsers.includes(u.id) ? 'selected' : ''}"
+												on:click={() => assignUser(project.id, u.id, project.assignedUsers && project.assignedUsers.includes(u.id))}
+											>
+												<span class="user-avatar">
+													{#if u.photoURL}
+														<img src={u.photoURL} alt="" />
+													{:else}
+														<span class="material-symbols-outlined">person</span>
+													{/if}
+												</span>
+												<span class="user-name">{u.displayName || u.email}</span>
+												{#if project.assignedUsers && project.assignedUsers.includes(u.id)}
+													<span class="material-symbols-outlined check-icon">check</span>
+												{/if}
+											</md-filled-button>
+										</div>
+									{/if}
+								{/each}
+							</div>
 						</div>
 					{/if}
 				</div>
@@ -228,6 +240,80 @@
 		font-size: 1.1rem;
 		font-weight: 600;
 		color: var(--md-sys-color-on-surface);
+	}
+	.user-assignment-section {
+		margin-top: 1rem;
+		width: 100%;
+	}
+	.user-assignment-section strong {
+		display: block;
+		margin-bottom: 0.75rem;
+		font-size: 1rem;
+		color: var(--md-sys-color-on-surface);
+	}
+	.user-selection-grid {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+	.user-selection-item {
+		flex: 0 0 auto;
+	}
+	.user-chip {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.5rem 0.75rem;
+		border-radius: var(--md-sys-shape-corner-large);
+		font-size: 0.9rem;
+		font-weight: 500;
+		transition: all 0.2s ease;
+		min-height: 40px;
+		background: var(--md-sys-color-surface-variant);
+		color: var(--md-sys-color-on-surface-variant);
+		border: 2px solid transparent;
+	}
+	.user-chip:hover {
+		background: var(--md-sys-color-primary-container);
+		color: var(--md-sys-color-on-primary-container);
+		transform: translateY(-1px);
+		box-shadow: 0 4px 12px rgba(103, 80, 164, 0.15);
+	}
+	.user-chip.selected {
+		background: var(--md-sys-color-primary);
+		color: var(--md-sys-color-on-primary);
+		border-color: var(--md-sys-color-primary);
+		box-shadow: 0 2px 8px rgba(103, 80, 164, 0.2);
+	}
+	.user-avatar {
+		width: 24px;
+		height: 24px;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: var(--md-sys-color-surface);
+		overflow: hidden;
+	}
+	.user-avatar img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	.user-avatar .material-symbols-outlined {
+		font-size: 16px;
+		color: var(--md-sys-color-on-surface-variant);
+	}
+	.user-chip.selected .user-avatar .material-symbols-outlined {
+		color: var(--md-sys-color-primary);
+	}
+	.user-name {
+		font-weight: 500;
+		white-space: nowrap;
+	}
+	.check-icon {
+		font-size: 18px;
+		margin-left: 0.25rem;
 	}
 	md-filled-button {
 		margin-top: 2rem;
