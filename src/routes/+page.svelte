@@ -1,78 +1,74 @@
 <script lang="ts">
+    // Import necessary Firebase Authentication modules
     import { GoogleAuthProvider, GithubAuthProvider, signInWithPopup, onAuthStateChanged } from "firebase/auth";
-    import { auth, user } from '$lib/firebase';
+    import { doc, getDoc, setDoc } from "firebase/firestore";
+    import { auth, db, user } from '$lib/firebase';
 
+    // Import Svelte's lifecycle hooks and navigation functions
     import { onMount } from 'svelte';
     import { goto } from "$app/navigation";
 
     async function signInWithGoogle() {
         const provider = new GoogleAuthProvider();
-        signInWithPopup(auth, provider)
-            .then((result) => {
 
-                // This gives you a Google Access Token. You can use it to access the Google API.
-                const credential = GoogleAuthProvider.credentialFromResult(result);
-                const token = credential?.accessToken;
+        try {
+            // Sign in with a popup using the Google provider
+            const result = await signInWithPopup(auth, provider);
+            const credential = GoogleAuthProvider.credentialFromResult(result);
 
-                // The signed-in user info.
-                const user = result.user;
+            const token = credential?.accessToken;
+            const user = result.user;
 
-                goto('/dashboard');
-                console.log("User signed in with Google:", user);
+            // Add user to Firestore if they don't exist (NOT FINISHED YET)
+            const userRef = doc(db, 'users', user.uid);
+            const userSnapshot = await getDoc(userRef);
 
-            }).catch((error) => {
+            goto('/dashboard');
+            console.log("User signed in with Google:", user);
+        } catch (error: any) {
+            // Handle Errors here.
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            const email = error.customData.email;
+            const credential = GoogleAuthProvider.credentialFromError(error);
 
-                // Handle Errors here.
-                const errorCode = error.code;
-                const errorMessage = error.message;
-
-                // The email of the user's account used.
-                const email = error.customData.email;
-
-                // The AuthCredential type that was used.
-                const credential = GoogleAuthProvider.credentialFromError(error);
-
-                console.error("Error signing in with Google:", errorCode, errorMessage, email, credential);
-
-            });
+            console.error("Error signing in with Google:", errorCode, errorMessage, email, credential);
+        }
     }
 
     async function signInWithGitHub() {
         const provider = new GithubAuthProvider();
-        signInWithPopup(auth, provider)
-            .then((result) => {
+        try {
+            // Sign in with a popup using the GitHub provider
+            const result = await signInWithPopup(auth, provider);
+            const credential = GithubAuthProvider.credentialFromResult(result);
 
-                // This gives you a GitHub Access Token. You can use it to access the GitHub API.
-                const credential = GithubAuthProvider.credentialFromResult(result);
-                const token = credential?.accessToken;
+            const token = credential?.accessToken;
+            const user = result.user;
 
-                // The signed-in user info.
-                const user = result.user;
+            // Add user to Firestore if they don't exist (NOT FINISHED YET)
+            const userRef = doc(db, 'users', user.uid);
+            const userSnapshot = await getDoc(userRef);
 
-                goto('/dashboard');
-                console.log("User signed in with GitHub:", user);
+            goto('/dashboard');
+            console.log("User signed in with GitHub:", user);
+        } catch (error: any) {
+            // Handle Errors here.
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            const email = error.customData.email;
+            const credential = GithubAuthProvider.credentialFromError(error);
 
-            }).catch((error) => {
-
-                // Handle Errors here.
-                const errorCode = error.code;
-                const errorMessage = error.message;
-
-                // The email of the user's account used.
-                const email = error.customData.email;
-
-                // The AuthCredential type that was used.
-                const credential = GithubAuthProvider.credentialFromError(error);
-
-                console.error("Error signing in with GitHub:", errorCode, errorMessage, email, credential);
-
-            });
+            console.error("Error signing in with GitHub:", errorCode, errorMessage, email, credential);
+        }
     }
 
+    // Fake function go happy...
     function signInWithEmail() {
         goto('/haha');
     }
 
+    // Lifecycle hook to redirect authenticated users
     onMount(() => {
         onAuthStateChanged(auth, (currentUser) => {
             if (currentUser) {

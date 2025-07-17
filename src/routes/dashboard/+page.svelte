@@ -1,32 +1,29 @@
 <script lang="ts">
     import type { PageData } from './$types';
 
-    import { signOut, onAuthStateChanged } from 'firebase/auth';
+    import { signOut } from 'firebase/auth';
     import { auth, user } from '$lib/firebase';
-
-    import { onMount } from 'svelte';
-    import { goto } from '$app/navigation';
 
     let { data }: { data: PageData } = $props();
 
     async function signOutUser() {
-        signOut(auth)
-            .then(() => {
-                console.log("User signed out successfully.");
-            })
-            .catch((error) => {
-                console.error("Error signing out:", error);
-            });
+        try {
+            // Sign out the user
+            await signOut(auth);
+            console.log("User signed out successfully.");
+        } catch (error) {
+            console.error("Error signing out:", error);
+        }
     }
-
-    onMount(() => {
-        onAuthStateChanged(auth, (currentUser) => {
-            if (!currentUser) {
-                goto('/');
-            }
-        });
-    });
 </script>
 
-<h1>Hello, {$user?.uid}</h1>
-<button class="btn btn-soft btn-error" onclick={signOutUser}>Sign Out</button>
+<main class="m-4">
+    <div class="flex gap-4">
+        <div class="w-[30%] p-7 shadow-md bg-base-100 rounded-2xl">
+            <h1 class="text-4xl font-bold">Projects</h1>
+        </div>
+        <div class="w-[70%] p-7 shadow-md bg-base-100 rounded-2xl">
+            <h1 class="text-4xl font-bold">Tasks</h1>
+        </div>
+    </div>
+</main>
