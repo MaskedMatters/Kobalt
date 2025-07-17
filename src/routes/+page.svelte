@@ -1,3 +1,87 @@
+<script lang="ts">
+    import { GoogleAuthProvider, GithubAuthProvider, signInWithPopup, onAuthStateChanged } from "firebase/auth";
+    import { auth, user } from '$lib/firebase';
+
+    import { onMount } from 'svelte';
+    import { goto } from "$app/navigation";
+
+    async function signInWithGoogle() {
+        const provider = new GoogleAuthProvider();
+        signInWithPopup(auth, provider)
+            .then((result) => {
+
+                // This gives you a Google Access Token. You can use it to access the Google API.
+                const credential = GoogleAuthProvider.credentialFromResult(result);
+                const token = credential?.accessToken;
+
+                // The signed-in user info.
+                const user = result.user;
+
+                goto('/dashboard');
+                console.log("User signed in with Google:", user);
+
+            }).catch((error) => {
+
+                // Handle Errors here.
+                const errorCode = error.code;
+                const errorMessage = error.message;
+
+                // The email of the user's account used.
+                const email = error.customData.email;
+
+                // The AuthCredential type that was used.
+                const credential = GoogleAuthProvider.credentialFromError(error);
+
+                console.error("Error signing in with Google:", errorCode, errorMessage, email, credential);
+
+            });
+    }
+
+    async function signInWithGitHub() {
+        const provider = new GithubAuthProvider();
+        signInWithPopup(auth, provider)
+            .then((result) => {
+
+                // This gives you a GitHub Access Token. You can use it to access the GitHub API.
+                const credential = GithubAuthProvider.credentialFromResult(result);
+                const token = credential?.accessToken;
+
+                // The signed-in user info.
+                const user = result.user;
+
+                goto('/dashboard');
+                console.log("User signed in with GitHub:", user);
+
+            }).catch((error) => {
+
+                // Handle Errors here.
+                const errorCode = error.code;
+                const errorMessage = error.message;
+
+                // The email of the user's account used.
+                const email = error.customData.email;
+
+                // The AuthCredential type that was used.
+                const credential = GithubAuthProvider.credentialFromError(error);
+
+                console.error("Error signing in with GitHub:", errorCode, errorMessage, email, credential);
+
+            });
+    }
+
+    function signInWithEmail() {
+        goto('/haha');
+    }
+
+    onMount(() => {
+        onAuthStateChanged(auth, (currentUser) => {
+            if (currentUser) {
+                goto('/dashboard');
+            }
+        });
+    });
+</script>
+
 <main>
 
     <!--BEFORE YOU LOOK AT THIS CODE, NOTE BY THE DEV... Tailwind bloats...-->
@@ -25,15 +109,15 @@
         </fieldset>
         <fieldset class="fieldset w-full">
             <legend class="fieldset-legend">Password</legend>
-            <input type="text" class="input w-full" placeholder="1234@AbCd" />
+            <input type="password" class="input w-full" placeholder="1234@AbCd" />
         </fieldset>
 
-        <button class="btn btn-xl btn-primary w-full">Sign In With Email</button>
+        <button class="btn btn-xl btn-primary w-full" onclick={signInWithEmail}>Sign In With Email</button>
 
         <p class="text-sm">------ or ------</p>
 
         <!--IdP Providers-->
-        <button class="btn btn-soft btn-xl btn-accent w-full">Sign In With Google</button>
-        <button class="btn btn-soft btn-xl btn-secondary w-full">Sign In With GitHub</button>
+        <button class="btn btn-soft btn-xl btn-accent w-full" onclick={signInWithGoogle}>Sign In With Google</button>
+        <button class="btn btn-soft btn-xl btn-secondary w-full" onclick={signInWithGitHub}>Sign In With GitHub</button>
     </div>
 </main>
